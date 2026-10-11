@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2-preview - 2026-10-11
+
+- Corretto il posizionamento degli eventi dentro l'area del planisfero, evitando marker e heatmap fuori mappa.
+- Aggiunta trasparenza sulle fonti: fonte live attiva, criteri di selezione eventi e fonti candidate.
+- Chiarito che la mappa principale mostra un sottoinsieme operativo, non tutto il catalogo sismico disponibile.
+
 ## 0.1.1-preview - 2026-10-11
 
 - Aggiunti metadati SEO e social preview per la pubblicazione GitHub Pages.

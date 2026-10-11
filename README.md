@@ -1,6 +1,6 @@
 # SismoPulse
 
-Versione: `0.1.1-preview`
+Versione: `0.1.2-preview`
 
 SismoPulse mostra dove l'attivita sismica osservata e sopra la media recente, senza fare previsioni.
 
@@ -19,6 +19,8 @@ https://gmy77.github.io/SismoPulse/
 - Confronta l'attivita osservata con una baseline recente.
 - Offre una lettura sintetica con indice di attenzione.
 - Usa dati USGS live quando disponibili, con fallback demo per evitare schermate vuote.
+- Fonte live attiva nella preview: USGS FDSN Event API.
+- Fonti candidate per prossime versioni: EMSC/SeismicPortal e INGV FDSN, da integrare con deduplicazione.
 
 ## Note
 
@@ -34,5 +36,5 @@ https://gmy77.github.io/SismoPulse/
 
 ## Versionamento
 
-- Versione corrente: `0.1.1-preview`
+- Versione corrente: `0.1.2-preview`
 - Aggiorna `VERSION`, `package.json` e `CHANGELOG.md` a ogni modifica pubblicabile.
