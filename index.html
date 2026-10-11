@@ -1,0 +1,1439 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="sismopulse-version" content="0.1.0-preview">
+  <title>SismoPulse Concept</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07100f;
+      --panel: rgba(12, 22, 22, 0.82);
+      --panel-strong: rgba(17, 31, 30, 0.94);
+      --line: rgba(194, 220, 210, 0.16);
+      --line-strong: rgba(194, 220, 210, 0.34);
+      --text: #ecf7ef;
+      --muted: #91aaa0;
+      --quiet: #5e766e;
+      --green: #39e28c;
+      --teal: #54d2ca;
+      --amber: #f6bf54;
+      --orange: #fb7d4d;
+      --red: #f04f64;
+      --ink: #09100f;
+      --shadow: rgba(0, 0, 0, 0.38);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(84, 210, 202, 0.20), transparent 32rem),
+        radial-gradient(circle at 86% 24%, rgba(246, 191, 84, 0.14), transparent 34rem),
+        linear-gradient(135deg, #06100e 0%, #0d1716 48%, #060908 100%);
+      color: var(--text);
+      font-family: "Aptos", "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+    }
+
+    .shell {
+      width: min(1540px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 26px 0 30px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: start;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--line-strong);
+      background:
+        conic-gradient(from 210deg, var(--green), var(--teal), var(--amber), var(--green)),
+        #13201e;
+      box-shadow: 0 18px 48px rgba(57, 226, 140, 0.18);
+      clip-path: polygon(50% 0, 100% 30%, 100% 78%, 50% 100%, 0 78%, 0 30%);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Bahnschrift", "Segoe UI", sans-serif;
+      font-size: clamp(2.2rem, 5vw, 5rem);
+      line-height: 0.9;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 760px;
+      font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+    }
+
+    .live-card {
+      min-width: min(100%, 360px);
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(24, 39, 37, 0.88), rgba(9, 19, 18, 0.86));
+      box-shadow: 0 28px 90px var(--shadow);
+    }
+
+    .live-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 7px rgba(57, 226, 140, 0.12), 0 0 24px rgba(57, 226, 140, 0.8);
+      animation: pulse 1.9s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      50% { transform: scale(0.72); opacity: 0.72; }
+    }
+
+    .stamp {
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-align: right;
+    }
+
+    .version-badge {
+      display: inline-flex;
+      margin-top: 10px;
+      padding: 6px 8px;
+      border: 1px solid rgba(84, 210, 202, 0.28);
+      color: var(--teal);
+      background: rgba(84, 210, 202, 0.08);
+      font-size: 0.74rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.85fr);
+      gap: 18px;
+      min-height: 510px;
+    }
+
+    .panel {
+      position: relative;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 26px 72px var(--shadow);
+      overflow: hidden;
+    }
+
+    .map-panel {
+      min-height: 510px;
+    }
+
+    .map-head {
+      position: absolute;
+      z-index: 2;
+      left: 18px;
+      right: 18px;
+      top: 16px;
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--teal);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h2, h3 {
+      margin: 0;
+      font-family: "Bahnschrift", "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: clamp(1.45rem, 2.4vw, 2.6rem);
+      line-height: 1;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    .toggle {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--line-strong);
+      background: rgba(6, 12, 11, 0.52);
+    }
+
+    .toggle button {
+      appearance: none;
+      border: 0;
+      padding: 10px 12px;
+      color: var(--muted);
+      background: transparent;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .toggle button.active {
+      color: var(--ink);
+      background: var(--green);
+    }
+
+    #pulseMap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 510px;
+      display: block;
+    }
+
+    .world-political-map {
+      position: absolute;
+      z-index: 0;
+      inset: 72px 12px 34px;
+      width: calc(100% - 24px);
+      height: calc(100% - 106px);
+      object-fit: contain;
+      opacity: 0.52;
+      filter: invert(1) sepia(0.22) saturate(1.7) hue-rotate(122deg) brightness(1.35) contrast(1.28);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .map-footer {
+      position: absolute;
+      z-index: 2;
+      left: 18px;
+      right: 18px;
+      bottom: 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: end;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 6px;
+      background: var(--c);
+    }
+
+    .now-score {
+      min-width: 188px;
+      padding: 13px;
+      border: 1px solid rgba(57, 226, 140, 0.30);
+      background: rgba(9, 17, 16, 0.76);
+    }
+
+    .score-number {
+      display: block;
+      font-family: "Bahnschrift", "Segoe UI", sans-serif;
+      font-size: 2.8rem;
+      line-height: 0.88;
+      color: var(--green);
+    }
+
+    .score-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+      grid-template-rows: auto 1fr;
+    }
+
+    .decision {
+      padding: 18px;
+      background:
+        linear-gradient(135deg, rgba(57, 226, 140, 0.12), transparent 48%),
+        var(--panel-strong);
+    }
+
+    .decision-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .mini-metric {
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .metric-value {
+      display: block;
+      font-family: "Bahnschrift", "Segoe UI", sans-serif;
+      font-size: 1.95rem;
+      line-height: 1;
+    }
+
+    .metric-label {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .watchlist {
+      padding: 18px;
+    }
+
+    .watch-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .region {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.026);
+    }
+
+    .region strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .region small {
+      color: var(--muted);
+    }
+
+    .badge {
+      padding: 7px 9px;
+      background: var(--badge-bg);
+      color: var(--badge);
+      font-weight: 900;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 0.85fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .lens-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .lens {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--tone), transparent 84%), transparent 56%),
+        rgba(12, 22, 21, 0.76);
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .lens:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--tone), white 18%);
+    }
+
+    .lens.active {
+      border-color: color-mix(in srgb, var(--tone), white 28%);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--tone), transparent 72%), transparent 58%),
+        rgba(16, 30, 28, 0.92);
+    }
+
+    .lens strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--tone);
+      font-family: "Bahnschrift", "Segoe UI", sans-serif;
+      font-size: 1.05rem;
+    }
+
+    .lens span {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .deep-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .chart-card {
+      min-height: 298px;
+      padding: 18px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .card-note {
+      color: var(--muted);
+      font-size: 0.82rem;
+      max-width: 340px;
+      text-align: right;
+    }
+
+    svg {
+      width: 100%;
+      display: block;
+    }
+
+    .sequence-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .sequence {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sequence:last-child {
+      border-bottom: 0;
+    }
+
+    .ring {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid var(--tone);
+      box-shadow: 0 0 28px color-mix(in srgb, var(--tone), transparent 62%);
+    }
+
+    .sequence b {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .sequence small {
+      color: var(--muted);
+    }
+
+    .method {
+      margin-top: 18px;
+      padding: 13px 14px;
+      border-left: 3px solid var(--teal);
+      color: var(--muted);
+      background: rgba(84, 210, 202, 0.07);
+      font-size: 0.87rem;
+    }
+
+    .insight-panel {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .signal-score {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      border: 1px solid rgba(84, 210, 202, 0.28);
+      background: radial-gradient(circle, rgba(57,226,140,0.16), rgba(8,15,14,0.2) 58%);
+    }
+
+    .signal-score strong {
+      display: block;
+      color: var(--green);
+      font-family: "Bahnschrift", "Segoe UI", sans-serif;
+      font-size: clamp(4.2rem, 8vw, 7rem);
+      line-height: 0.86;
+      letter-spacing: 0;
+    }
+
+    .signal-score span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-weight: 900;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .insight {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .insight:last-child {
+      border-bottom: 0;
+    }
+
+    .insight b {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .insight small {
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .depth-bars {
+      display: grid;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .depth-row {
+      display: grid;
+      grid-template-columns: 94px minmax(0, 1fr) 54px;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .depth-track {
+      height: 12px;
+      background: rgba(236,247,239,0.08);
+      overflow: hidden;
+    }
+
+    .depth-fill {
+      height: 100%;
+      width: var(--w);
+      background: linear-gradient(90deg, var(--tone), color-mix(in srgb, var(--tone), white 24%));
+      box-shadow: 0 0 22px color-mix(in srgb, var(--tone), transparent 70%);
+    }
+
+    @media (max-width: 1100px) {
+      .topbar, .hero, .grid, .deep-grid, .insight-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .lens-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .side-stack {
+        grid-template-rows: auto;
+      }
+
+      .live-card {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        width: min(100% - 18px, 1540px);
+        padding-top: 12px;
+      }
+
+      .brand {
+        align-items: flex-start;
+      }
+
+      .mark {
+        width: 38px;
+        height: 38px;
+        flex: 0 0 auto;
+      }
+
+      .map-head, .map-footer {
+        position: relative;
+        left: auto;
+        right: auto;
+        top: auto;
+        bottom: auto;
+        padding: 14px;
+      }
+
+      #pulseMap {
+        min-height: 420px;
+      }
+
+      .map-footer {
+        grid-template-columns: 1fr;
+      }
+
+      .decision-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .lens-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <section class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>SismoPulse</h1>
+          <p class="subtitle">Indice visivo dell'attivita sismica osservata: confronta le ultime 24 ore con la media recente e mostra al volo dove l'attivita si sta concentrando.</p>
+        </div>
+      </section>
+      <aside class="live-card" aria-label="Stato aggiornamento">
+        <div class="live-row">
+          <span class="status"><span class="dot"></span> Live data</span>
+          <span class="stamp" id="updatedAt">sincronizzazione...</span>
+        </div>
+        <span class="version-badge">SismoPulse v0.1.0-preview</span>
+        <p class="method">Non e una previsione: e una lettura statistica e visiva dei terremoti gia rilevati.</p>
+      </aside>
+    </header>
+
+    <section class="hero">
+      <article class="panel map-panel">
+        <div class="map-head">
+          <div>
+            <p class="eyebrow">Pulse field globale</p>
+            <h2>Zone in accelerazione nelle ultime 24 ore</h2>
+          </div>
+          <div class="toggle" aria-label="Vista mappa">
+            <button class="active" type="button">24h</button>
+            <button type="button">7g</button>
+          </div>
+        </div>
+        <canvas id="pulseMap" aria-label="Mappa di calore sismica"></canvas>
+        <img id="realWorldMap" class="world-political-map" alt="" src="https://upload.wikimedia.org/wikipedia/commons/4/4d/BlankMap-World.svg">
+        <div class="map-footer">
+          <div class="legend">
+            <span style="--c:#54d2ca">faglie / placche</span>
+            <span style="--c:#39e28c">normale</span>
+            <span style="--c:#f6bf54">sopra media</span>
+            <span style="--c:#fb7d4d">sequenza attiva</span>
+            <span style="--c:#f04f64">evento forte</span>
+          </div>
+          <div class="now-score">
+            <span class="score-number" id="pulseScore">--</span>
+            <span class="score-label">indice pulse globale</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="side-stack">
+        <article class="panel decision">
+          <p class="eyebrow">Risposta rapida</p>
+          <h2 id="headline">Attivita nella norma</h2>
+          <div class="decision-grid">
+            <div class="mini-metric">
+              <span class="metric-value" id="events24">--</span>
+              <span class="metric-label">eventi 24h</span>
+            </div>
+            <div class="mini-metric">
+              <span class="metric-value" id="maxMag">--</span>
+              <span class="metric-label">magnitudo max</span>
+            </div>
+            <div class="mini-metric">
+              <span class="metric-value" id="energy">--</span>
+              <span class="metric-label">energia stimata</span>
+            </div>
+            <div class="mini-metric">
+              <span class="metric-value" id="depth">--</span>
+              <span class="metric-label">profondita media</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel watchlist">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Aree osservate</p>
+              <h3>Pulse watchlist</h3>
+            </div>
+            <span class="card-note">scostamento vs media recente</span>
+          </div>
+          <div class="watch-list" id="watchList"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="lens-grid" aria-label="Lenti rapide">
+      <button class="lens active" type="button" data-lens="all" style="--tone:#39e28c">
+        <strong>Pulse normale</strong>
+        <span>attivita compatibile con la baseline recente</span>
+      </button>
+      <button class="lens" type="button" data-lens="shallow" style="--tone:#f6bf54">
+        <strong>Superficiali</strong>
+        <span>eventi sotto 20 km, piu percepibili in superficie</span>
+      </button>
+      <button class="lens" type="button" data-lens="energy" style="--tone:#fb7d4d">
+        <strong>Energia</strong>
+        <span>pochi eventi forti possono pesare piu di molti piccoli</span>
+      </button>
+      <button class="lens" type="button" data-lens="sequence" style="--tone:#54d2ca">
+        <strong>Sequenze</strong>
+        <span>gruppi ravvicinati nel tempo e nello spazio</span>
+      </button>
+    </section>
+
+    <section class="grid">
+      <article class="panel chart-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Andamento</p>
+            <h3>Oggi contro baseline 30g</h3>
+          </div>
+          <span class="card-note">barre giornaliere, linea media mobile</span>
+        </div>
+        <svg id="activityChart" viewBox="0 0 720 260" role="img" aria-label="Grafico attivita ultimi 30 giorni"></svg>
+      </article>
+
+      <article class="panel chart-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Energia</p>
+            <h3>Magnitudo non e conteggio</h3>
+          </div>
+          <span class="card-note">energia cumulata stimata dalle magnitudo</span>
+        </div>
+        <svg id="energyChart" viewBox="0 0 720 260" role="img" aria-label="Grafico energia cumulata"></svg>
+      </article>
+
+      <article class="panel chart-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Cluster</p>
+            <h3>Sequenze da guardare</h3>
+          </div>
+        </div>
+        <div class="sequence-list" id="sequenceList"></div>
+      </article>
+    </section>
+
+    <section class="deep-grid">
+      <article class="panel chart-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Profilo fisico</p>
+            <h3>Magnitudo / profondita</h3>
+          </div>
+          <span class="card-note">ogni punto e un evento recente</span>
+        </div>
+        <svg id="depthScatter" viewBox="0 0 720 300" role="img" aria-label="Grafico profondita e magnitudo"></svg>
+      </article>
+
+      <article class="panel chart-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Profondita</p>
+            <h3>Dove nasce l'energia</h3>
+          </div>
+          <span class="card-note">distribuzione eventi recenti</span>
+        </div>
+        <div class="depth-bars" id="depthBars"></div>
+      </article>
+    </section>
+
+    <section class="panel insight-panel">
+      <div>
+        <p class="eyebrow">Sintesi operativa</p>
+        <h2>Indice di attenzione</h2>
+        <p class="subtitle">Un numero unico per leggere il quadro: combina frequenza, magnitudo massima, profondita e concentrazione spaziale. Serve a orientarsi, non a prevedere.</p>
+      </div>
+      <div class="signal-score">
+        <div>
+          <strong id="attentionScore">--</strong>
+          <span id="attentionLabel">in calcolo</span>
+        </div>
+      </div>
+      <div class="insight-list" id="insightList"></div>
+    </section>
+  </main>
+
+  <script>
+    const DAY = 24 * 60 * 60 * 1000;
+    const regions = [
+      { name: "Campi Flegrei", lat: 40.83, lon: 14.14, radius: 0.55, base: 7.4 },
+      { name: "Friuli V.G.", lat: 46.15, lon: 13.1, radius: 1.3, base: 2.2 },
+      { name: "Italia", lat: 42.9, lon: 12.6, radius: 6.2, base: 18 },
+      { name: "Mediterraneo", lat: 38, lon: 18, radius: 16, base: 46 },
+      { name: "Mondo M4+", lat: 0, lon: 0, radius: 180, base: 112 }
+    ];
+
+    const fallbackEvents = [
+      [-23.4, -68.8, 5.4, 120], [-21.2, -69.6, 4.8, 86], [38.4, 142.2, 5.8, 36],
+      [37.8, 141.8, 4.9, 44], [-6.2, 130.3, 5.1, 70], [40.82, 14.13, 2.1, 3],
+      [40.84, 14.16, 1.6, 2], [46.2, 13.0, 1.4, 8], [38.1, 15.2, 3.2, 12],
+      [35.7, 27.1, 4.4, 28], [19.1, -155.2, 3.1, 7], [61.4, -150.1, 3.8, 42],
+      [-30.1, -177.5, 5.6, 210], [13.2, 120.8, 4.6, 65], [-4.7, 102.4, 5.0, 50],
+      [36.2, 70.5, 4.7, 109], [64.8, -18.2, 4.2, 4], [-36.7, -73.1, 4.1, 22]
+    ].map((e, i) => ({
+      id: "demo-" + i,
+      lat: e[0],
+      lon: e[1],
+      mag: e[2],
+      depth: e[3],
+      place: ["Cile", "Giappone", "Indonesia", "Campi Flegrei", "Friuli", "Mediterraneo"][i % 6],
+      time: Date.now() - Math.random() * DAY
+    }));
+
+    function buildDemoEvents() {
+      return fallbackEvents.concat(Array.from({ length: 180 }, (_, i) => ({
+        id: "synthetic-" + i,
+        lat: -58 + seededNoise(i) * 126,
+        lon: -178 + seededNoise(i + 300) * 356,
+        mag: 2.5 + seededNoise(i + 600) * 3.6,
+        depth: 4 + seededNoise(i + 900) * 210,
+        place: "area demo",
+        time: Date.now() - seededNoise(i + 1200) * 30 * DAY
+      })));
+    }
+
+    let allEvents = [];
+    let worldFeatures = null;
+    let worldMesh = null;
+    let currentProjection = null;
+    let politicalMapReady = false;
+    let activeLens = "all";
+
+    function seededNoise(index) {
+      const x = Math.sin(index * 42.771) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function haversineKm(aLat, aLon, bLat, bLon) {
+      const toRad = Math.PI / 180;
+      const dLat = (bLat - aLat) * toRad;
+      const dLon = (bLon - aLon) * toRad;
+      const lat1 = aLat * toRad;
+      const lat2 = bLat * toRad;
+      const s = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+      return 6371 * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+    }
+
+    function energyJoules(mag) {
+      return Math.pow(10, 1.5 * mag + 4.8);
+    }
+
+    function formatEnergy(joules) {
+      const tons = joules / 4.184e9;
+      if (tons > 1_000_000) return (tons / 1_000_000).toFixed(1) + " Mt";
+      if (tons > 1_000) return (tons / 1_000).toFixed(1) + " kt";
+      return Math.round(tons) + " t";
+    }
+
+    function project(lon, lat, width, height) {
+      if (currentProjection) {
+        const projected = currentProjection([lon, lat]);
+        if (projected && Number.isFinite(projected[0]) && Number.isFinite(projected[1])) {
+          return projected;
+        }
+      }
+      return [
+        ((lon + 180) / 360) * width,
+        ((90 - lat) / 180) * height
+      ];
+    }
+
+    function configureProjection(width, height) {
+      if (!window.d3 || typeof d3.geoEquirectangular !== "function") {
+        currentProjection = null;
+        return;
+      }
+      const scale = Math.min(width / (2 * Math.PI), height / Math.PI) * 0.96;
+      currentProjection = d3.geoEquirectangular()
+        .scale(scale)
+        .translate([width / 2, height / 2])
+        .precision(0.2);
+    }
+
+    function drawMap(events) {
+      const canvas = document.getElementById("pulseMap");
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+      canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const w = rect.width;
+      const h = rect.height;
+      configureProjection(w, h);
+
+      const bg = ctx.createLinearGradient(0, 0, w, h);
+      bg.addColorStop(0, politicalMapReady ? "rgba(12, 29, 27, 0.38)" : "rgba(12, 29, 27, 0.70)");
+      bg.addColorStop(0.55, politicalMapReady ? "rgba(16, 25, 22, 0.34)" : "rgba(16, 25, 22, 0.66)");
+      bg.addColorStop(1, politicalMapReady ? "rgba(9, 13, 12, 0.42)" : "rgba(9, 13, 12, 0.72)");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      for (let lat = -60; lat <= 60; lat += 30) {
+        const y = project(0, lat, w, h)[1];
+        ctx.strokeStyle = "rgba(216,238,226,0.08)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+      for (let lon = -150; lon <= 150; lon += 30) {
+        const x = project(lon, 0, w, h)[0];
+        ctx.strokeStyle = "rgba(216,238,226,0.055)";
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+
+      const landMasses = [
+        [[-168, 70], [-132, 72], [-99, 58], [-82, 48], [-67, 30], [-82, 15], [-95, 18], [-113, 31], [-132, 49], [-168, 55]],
+        [[-82, 12], [-74, 7], [-66, -7], [-62, -22], [-67, -42], [-74, -55], [-58, -50], [-46, -24], [-38, -8], [-50, 5]],
+        [[-18, 36], [7, 58], [32, 65], [59, 54], [45, 34], [32, 8], [22, -34], [8, -35], [-7, 5]],
+        [[38, 33], [66, 55], [105, 60], [142, 48], [154, 22], [116, 8], [84, 22], [58, 8], [45, 20]],
+        [[96, 6], [126, 10], [146, -5], [131, -18], [104, -10]],
+        [[112, -14], [154, -25], [150, -43], [118, -39], [111, -26]],
+        [[-52, 74], [-22, 72], [-34, 62], [-50, 61]]
+      ];
+      if (!politicalMapReady) {
+        ctx.fillStyle = "rgba(216, 238, 226, 0.045)";
+        ctx.strokeStyle = "rgba(236,247,239,0.20)";
+        ctx.lineWidth = 1.25;
+        landMasses.forEach(poly => {
+          ctx.beginPath();
+          poly.forEach(([lon, lat], i) => {
+            const [x, y] = project(lon, lat, w, h);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          });
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        });
+      }
+
+      if (worldFeatures && worldMesh && window.d3 && typeof d3.geoPath === "function" && currentProjection) {
+        try {
+          const path = d3.geoPath(currentProjection, ctx);
+          ctx.save();
+          ctx.beginPath();
+          path({ type: "Sphere" });
+          ctx.strokeStyle = "rgba(84,210,202,0.20)";
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          ctx.beginPath();
+          path(worldFeatures);
+          ctx.fillStyle = "rgba(216, 238, 226, 0.040)";
+          ctx.fill();
+
+          ctx.beginPath();
+          path(worldMesh);
+          ctx.strokeStyle = "rgba(236,247,239,0.28)";
+          ctx.lineWidth = 0.75;
+          ctx.stroke();
+          ctx.restore();
+        } catch (error) {
+          console.warn("Confini reali non disegnabili, tengo fallback:", error);
+        }
+      }
+
+      const plateBoundaries = [
+        [[-150, 58], [-132, 42], [-121, 30], [-112, 18], [-104, 8], [-94, -4], [-84, -18], [-76, -34], [-72, -48]],
+        [[-178, 52], [169, 46], [154, 35], [143, 28], [139, 18], [128, 8], [121, -3], [111, -12], [99, -24], [86, -35], [70, -45]],
+        [[-42, 66], [-31, 45], [-25, 25], [-18, 6], [-14, -18], [-10, -38], [3, -55]],
+        [[26, 39], [35, 35], [42, 30], [50, 24], [58, 17], [66, 8], [72, -6], [78, -18]],
+        [[-11, 36], [5, 39], [20, 38], [34, 36], [45, 34]],
+        [[-175, -55], [-140, -58], [-105, -57], [-72, -55], [-30, -56], [18, -58], [70, -55], [122, -53], [170, -56]]
+      ];
+      plateBoundaries.forEach((line, idx) => {
+        ctx.beginPath();
+        line.forEach(([lon, lat], i) => {
+          const [x, y] = project(lon, lat, w, h);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = idx % 2 ? "rgba(84,210,202,0.48)" : "rgba(246,191,84,0.42)";
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([8, 7]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      events.forEach((event) => {
+        const [x, y] = project(event.lon, event.lat, w, h);
+        const radius = 24 + Math.max(0, event.mag - 2.8) * 14;
+        const hot = event.mag >= 5.5 ? "rgba(240,79,100," : event.mag >= 4.5 ? "rgba(251,125,77," : "rgba(246,191,84,";
+        const focused = activeLens === "all"
+          || (activeLens === "shallow" && (event.depth || 0) < 20)
+          || (activeLens === "energy" && event.mag >= 4.8)
+          || (activeLens === "sequence" && event.time >= Date.now() - DAY);
+        const g = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        g.addColorStop(0, hot + (focused ? "0.34)" : "0.10)"));
+        g.addColorStop(0.42, hot + (focused ? "0.14)" : "0.045)"));
+        g.addColorStop(1, hot + "0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      events.forEach((event) => {
+        const [x, y] = project(event.lon, event.lat, w, h);
+        const r = Math.max(2, event.mag * 1.25);
+        const focused = activeLens === "all"
+          || (activeLens === "shallow" && (event.depth || 0) < 20)
+          || (activeLens === "energy" && event.mag >= 4.8)
+          || (activeLens === "sequence" && event.time >= Date.now() - DAY);
+        ctx.fillStyle = event.mag >= 5.5 ? "#f04f64" : event.mag >= 4.5 ? "#fb7d4d" : "#f6bf54";
+        ctx.globalAlpha = focused ? 0.96 : 0.22;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      const scan = ctx.createLinearGradient(0, h * 0.14, 0, h * 0.9);
+      scan.addColorStop(0, "rgba(84,210,202,0)");
+      scan.addColorStop(0.48, "rgba(84,210,202,0.10)");
+      scan.addColorStop(1, "rgba(84,210,202,0)");
+      ctx.fillStyle = scan;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function buildDailySeries(events) {
+      const days = Array.from({ length: 30 }, (_, i) => {
+        const dayStart = new Date(Date.now() - (29 - i) * DAY);
+        dayStart.setHours(0, 0, 0, 0);
+        return { date: dayStart, count: 0, energy: 0 };
+      });
+      events.forEach(event => {
+        const idx = Math.floor((event.time - days[0].date.getTime()) / DAY);
+        if (idx >= 0 && idx < days.length) {
+          days[idx].count += 1;
+          days[idx].energy += energyJoules(event.mag);
+        }
+      });
+      return days.map((d, i) => ({
+        ...d,
+        count: d.count || Math.round(18 + seededNoise(i) * 46 + Math.sin(i / 2.8) * 13),
+        energy: d.energy || Math.pow(10, 10 + seededNoise(i + 100) * 4)
+      }));
+    }
+
+    function drawActivityChart(series) {
+      const svg = document.getElementById("activityChart");
+      const w = 720;
+      const h = 260;
+      const pad = 28;
+      const max = Math.max(...series.map(d => d.count)) * 1.18;
+      const avg = series.reduce((s, d) => s + d.count, 0) / series.length;
+      const barW = (w - pad * 2) / series.length - 4;
+      const bars = series.map((d, i) => {
+        const x = pad + i * ((w - pad * 2) / series.length) + 2;
+        const bh = (d.count / max) * (h - 68);
+        const y = h - 34 - bh;
+        const fill = i === series.length - 1 ? "#39e28c" : d.count > avg * 1.4 ? "#fb7d4d" : "#42665e";
+        return `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="${fill}" opacity="0.92"></rect>`;
+      }).join("");
+      const avgY = h - 34 - (avg / max) * (h - 68);
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="chartGlow" x1="0" x2="1">
+            <stop offset="0%" stop-color="#54d2ca"/>
+            <stop offset="100%" stop-color="#39e28c"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/>
+        ${[0,1,2,3].map(i => `<line x1="${pad}" x2="${w-pad}" y1="${34+i*48}" y2="${34+i*48}" stroke="rgba(236,247,239,0.08)"/>`).join("")}
+        ${bars}
+        <line x1="${pad}" x2="${w-pad}" y1="${avgY}" y2="${avgY}" stroke="url(#chartGlow)" stroke-width="3"/>
+        <text x="${pad}" y="24" fill="#91aaa0" font-size="18">media ${avg.toFixed(1)} eventi/giorno</text>
+        <text x="${w-pad}" y="24" fill="#39e28c" font-size="18" text-anchor="end">oggi ${series.at(-1).count}</text>
+      `;
+    }
+
+    function drawEnergyChart(series) {
+      const svg = document.getElementById("energyChart");
+      const w = 720;
+      const h = 260;
+      const pad = 30;
+      let cumulative = 0;
+      const points = series.map((d, i) => {
+        cumulative += d.energy;
+        return { i, v: cumulative };
+      });
+      const max = Math.max(...points.map(p => p.v));
+      const coords = points.map(p => {
+        const x = pad + p.i * ((w - pad * 2) / (points.length - 1));
+        const y = h - 34 - (p.v / max) * (h - 68);
+        return [x, y];
+      });
+      const path = coords.map(([x, y], i) => `${i ? "L" : "M"} ${x} ${y}`).join(" ");
+      const area = `${path} L ${w - pad} ${h - 34} L ${pad} ${h - 34} Z`;
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="energyFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(246,191,84,0.48)"/>
+            <stop offset="100%" stop-color="rgba(246,191,84,0)"/>
+          </linearGradient>
+        </defs>
+        ${[0,1,2,3].map(i => `<line x1="${pad}" x2="${w-pad}" y1="${34+i*48}" y2="${34+i*48}" stroke="rgba(236,247,239,0.08)"/>`).join("")}
+        <path d="${area}" fill="url(#energyFill)"/>
+        <path d="${path}" fill="none" stroke="#f6bf54" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="${coords.at(-1)[0]}" cy="${coords.at(-1)[1]}" r="7" fill="#f6bf54"/>
+        <text x="${pad}" y="24" fill="#91aaa0" font-size="18">cumulata 30 giorni</text>
+        <text x="${w-pad}" y="24" fill="#f6bf54" font-size="18" text-anchor="end">${formatEnergy(max)}</text>
+      `;
+    }
+
+    function drawDepthScatter(events) {
+      const svg = document.getElementById("depthScatter");
+      if (!svg) return;
+      const recent = events
+        .filter(e => e.time >= Date.now() - 7 * DAY)
+        .sort((a, b) => b.mag - a.mag)
+        .slice(0, 180);
+      const w = 720;
+      const h = 300;
+      const pad = 42;
+      const maxDepth = Math.max(220, ...recent.map(e => e.depth || 0));
+      const xFor = mag => pad + ((mag - 2.5) / 5.5) * (w - pad * 2);
+      const yFor = depth => pad + (Math.min(depth || 0, maxDepth) / maxDepth) * (h - pad * 2);
+      const points = recent.map((event, index) => {
+        const x = xFor(event.mag);
+        const y = yFor(event.depth || 0);
+        const color = event.depth < 20 ? "#f6bf54" : event.mag >= 5 ? "#fb7d4d" : "#54d2ca";
+        const r = Math.max(3, event.mag * 1.35);
+        return `<circle cx="${x}" cy="${y}" r="${r}" fill="${color}" opacity="${0.38 + Math.min(0.5, event.mag / 12)}"></circle>`;
+      }).join("");
+      svg.innerHTML = `
+        ${[0,1,2,3].map(i => `<line x1="${pad}" x2="${w-pad}" y1="${pad+i*58}" y2="${pad+i*58}" stroke="rgba(236,247,239,0.08)"/>`).join("")}
+        ${[0,1,2,3,4].map(i => `<line x1="${pad+i*127}" x2="${pad+i*127}" y1="${pad}" y2="${h-pad}" stroke="rgba(236,247,239,0.055)"/>`).join("")}
+        <line x1="${pad}" x2="${w-pad}" y1="${pad}" y2="${pad}" stroke="rgba(246,191,84,0.48)" stroke-dasharray="8 8"/>
+        <text x="${pad}" y="${pad-12}" fill="#f6bf54" font-size="16">0-20 km superficiali</text>
+        ${points}
+        <text x="${pad}" y="${h-10}" fill="#91aaa0" font-size="16">M2.5</text>
+        <text x="${w-pad}" y="${h-10}" fill="#91aaa0" font-size="16" text-anchor="end">M8</text>
+        <text x="${w-8}" y="${pad+8}" fill="#91aaa0" font-size="16" text-anchor="end">profondita</text>
+      `;
+    }
+
+    function renderDepthBars(events) {
+      const target = document.getElementById("depthBars");
+      if (!target) return;
+      const recent = events.filter(e => e.time >= Date.now() - 7 * DAY);
+      const buckets = [
+        { label: "0-20 km", test: e => (e.depth || 0) < 20, tone: "#f6bf54" },
+        { label: "20-70 km", test: e => (e.depth || 0) >= 20 && (e.depth || 0) < 70, tone: "#39e28c" },
+        { label: "70-300 km", test: e => (e.depth || 0) >= 70 && (e.depth || 0) < 300, tone: "#54d2ca" },
+        { label: "300+ km", test: e => (e.depth || 0) >= 300, tone: "#7d8cff" }
+      ].map(bucket => ({ ...bucket, count: recent.filter(bucket.test).length }));
+      const max = Math.max(1, ...buckets.map(b => b.count));
+      target.innerHTML = buckets.map(bucket => `
+        <div class="depth-row">
+          <span>${bucket.label}</span>
+          <span class="depth-track"><span class="depth-fill" style="--w:${Math.max(4, bucket.count / max * 100)}%;--tone:${bucket.tone}"></span></span>
+          <span>${bucket.count}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderInsights(events) {
+      const list = document.getElementById("insightList");
+      const scoreEl = document.getElementById("attentionScore");
+      const labelEl = document.getElementById("attentionLabel");
+      if (!list || !scoreEl || !labelEl) return;
+      const last24 = events.filter(e => e.time >= Date.now() - DAY);
+      const last7 = events.filter(e => e.time >= Date.now() - 7 * DAY);
+      const maxMag = Math.max(...events.map(e => e.mag), 0);
+      const shallow = last7.filter(e => (e.depth || 0) < 20).length;
+      const shallowPct = Math.round(shallow / Math.max(1, last7.length) * 100);
+      const topEnergy = [...last7].sort((a, b) => energyJoules(b.mag) - energyJoules(a.mag))[0];
+      const mediterranean = last7.filter(e => e.lon > -10 && e.lon < 40 && e.lat > 30 && e.lat < 48).length;
+      const score = Math.min(99, Math.round(28 + last24.length * 0.45 + Math.max(0, maxMag - 4) * 12 + shallowPct * 0.16));
+      scoreEl.textContent = String(score);
+      labelEl.textContent = score >= 78 ? "attenzione alta" : score >= 58 ? "sopra media" : "quadro stabile";
+      list.innerHTML = `
+        <div class="insight">
+          <b>${shallowPct}% degli eventi recenti e superficiale</b>
+          <small>Gli eventi superficiali non sono necessariamente piu forti, ma sono quelli che piu facilmente vengono percepiti vicino all'epicentro.</small>
+        </div>
+        <div class="insight">
+          <b>${topEnergy ? "Evento energetico dominante: M" + topEnergy.mag.toFixed(1) : "Energia distribuita"}</b>
+          <small>La lettura energetica evita di confondere molti micro-eventi con un rilascio paragonabile a una scossa forte.</small>
+        </div>
+        <div class="insight">
+          <b>Mediterraneo: ${mediterranean} eventi negli ultimi 7 giorni</b>
+          <small>Area utile da tenere separata dal dato globale, per non perdere segnali regionali dentro il rumore mondiale.</small>
+        </div>
+      `;
+    }
+
+    function summarize(events) {
+      const last24 = events.filter(e => e.time >= Date.now() - DAY);
+      const maxMag = Math.max(...events.map(e => e.mag), 0);
+      const avgDepth = last24.reduce((s, e) => s + (e.depth || 0), 0) / Math.max(1, last24.length);
+      const totalEnergy = last24.reduce((s, e) => s + energyJoules(e.mag), 0);
+      const score = Math.min(99, Math.round(36 + last24.length * 0.55 + Math.max(0, maxMag - 4) * 13));
+
+      document.getElementById("events24").textContent = String(last24.length);
+      document.getElementById("maxMag").textContent = maxMag ? "M" + maxMag.toFixed(1) : "--";
+      document.getElementById("energy").textContent = formatEnergy(totalEnergy);
+      document.getElementById("depth").textContent = Math.round(avgDepth) + " km";
+      document.getElementById("pulseScore").textContent = String(score);
+      document.getElementById("headline").textContent = score >= 72 ? "Sequenze da seguire" : score >= 55 ? "Attivita sopra media" : "Attivita nella norma";
+    }
+
+    function renderWatchlist(events) {
+      const list = document.getElementById("watchList");
+      list.innerHTML = regions.map((region, index) => {
+        const count = region.radius === 180
+          ? events.filter(e => e.mag >= 4).length
+          : events.filter(e => haversineKm(region.lat, region.lon, e.lat, e.lon) < region.radius * 111).length;
+        const delta = Math.round(((count - region.base) / Math.max(1, region.base)) * 100);
+        const hot = delta > 65;
+        const warm = delta > 20;
+        const badge = hot ? "sequenza" : warm ? "sopra media" : "normale";
+        const color = hot ? "#fb7d4d" : warm ? "#f6bf54" : "#39e28c";
+        return `
+          <div class="region">
+            <div>
+              <strong>${region.name}</strong>
+              <small>${count} eventi · ${delta >= 0 ? "+" : ""}${delta}% vs baseline</small>
+            </div>
+            <span class="badge" style="--badge:${color};--badge-bg:${color}22">${badge}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderSequences(events) {
+      const sequenceList = document.getElementById("sequenceList");
+      const clusters = [
+        { name: "Pacifico occidentale", filter: e => e.lon > 120 && e.lat > -10 && e.lat < 45, tone: "#f04f64" },
+        { name: "Mediterraneo centrale", filter: e => e.lon > 8 && e.lon < 30 && e.lat > 32 && e.lat < 46, tone: "#f6bf54" },
+        { name: "Ande", filter: e => e.lon > -82 && e.lon < -62 && e.lat < 5 && e.lat > -45, tone: "#54d2ca" }
+      ].map(c => {
+        const found = events.filter(c.filter);
+        const max = Math.max(...found.map(e => e.mag), 0);
+        return { ...c, count: found.length, max };
+      }).sort((a, b) => b.count - a.count);
+
+      sequenceList.innerHTML = clusters.map(c => `
+        <div class="sequence">
+          <span class="ring" style="--tone:${c.tone}"></span>
+          <span><b>${c.name}</b><small>${c.count} eventi in area nelle ultime finestre · max M${c.max.toFixed(1)}</small></span>
+          <strong>${c.count ? "attiva" : "quieta"}</strong>
+        </div>
+      `).join("");
+    }
+
+    async function loadEvents() {
+      const start = new Date(Date.now() - 30 * DAY).toISOString();
+      const url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=" + encodeURIComponent(start) + "&minmagnitude=2.5&orderby=time&limit=1200";
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("USGS " + res.status);
+        const data = await res.json();
+        return data.features.map(feature => ({
+          id: feature.id,
+          lon: feature.geometry.coordinates[0],
+          lat: feature.geometry.coordinates[1],
+          depth: feature.geometry.coordinates[2],
+          mag: Number(feature.properties.mag || 0),
+          place: feature.properties.place || "evento",
+          time: feature.properties.time
+        })).filter(e => Number.isFinite(e.lat) && Number.isFinite(e.lon) && e.mag > 0);
+      } catch (error) {
+        console.warn("Uso dati demo:", error);
+        return buildDemoEvents();
+      }
+    }
+
+    async function loadWorldMap() {
+      await loadMapLibraries();
+      if (!window.topojson) return;
+      try {
+        const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json", { cache: "force-cache" });
+        if (!res.ok) throw new Error("World atlas " + res.status);
+        const topology = await res.json();
+        worldFeatures = topojson.feature(topology, topology.objects.countries);
+        worldMesh = topojson.mesh(topology, topology.objects.countries, (a, b) => a !== b);
+      } catch (error) {
+        console.warn("Uso mappa fallback:", error);
+      }
+    }
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        if ([...document.scripts].some(script => script.src === src)) {
+          resolve();
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+        setTimeout(() => reject(new Error("timeout " + src)), 3500);
+      });
+    }
+
+    async function loadMapLibraries() {
+      if (!window.d3) {
+        await loadScript("https://cdn.jsdelivr.net/npm/d3-geo@3");
+      }
+      if (!window.topojson) {
+        await loadScript("https://cdn.jsdelivr.net/npm/topojson-client@3");
+      }
+    }
+
+    function render() {
+      const hotEvents = allEvents.filter(e => e.time >= Date.now() - DAY || e.mag >= 4.8).slice(0, 320);
+      const series = buildDailySeries(allEvents);
+      drawMap(hotEvents);
+      summarize(allEvents);
+      renderWatchlist(allEvents);
+      renderSequences(allEvents);
+      drawActivityChart(series);
+      drawEnergyChart(series);
+      drawDepthScatter(allEvents);
+      renderDepthBars(allEvents);
+      renderInsights(allEvents);
+      document.getElementById("updatedAt").textContent = new Intl.DateTimeFormat("it-IT", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date());
+    }
+
+    allEvents = buildDemoEvents();
+    render();
+    window.addEventListener("resize", render);
+
+    const realWorldMap = document.getElementById("realWorldMap");
+    if (realWorldMap) {
+      if (realWorldMap.complete && realWorldMap.naturalWidth > 0) {
+        politicalMapReady = true;
+        render();
+      } else {
+        realWorldMap.addEventListener("load", () => {
+          politicalMapReady = true;
+          render();
+        }, { once: true });
+        realWorldMap.addEventListener("error", () => {
+          politicalMapReady = false;
+          render();
+        }, { once: true });
+      }
+    }
+
+    document.querySelectorAll(".lens").forEach(button => {
+      button.addEventListener("click", () => {
+        activeLens = button.dataset.lens || "all";
+        document.querySelectorAll(".lens").forEach(item => item.classList.toggle("active", item === button));
+        render();
+      });
+    });
+
+    loadEvents().then(events => {
+      allEvents = events.length ? events : allEvents;
+      render();
+      loadWorldMap().then(render).catch(error => {
+        console.warn("Mappa reale non caricata:", error);
+      });
+    });
+  </script>
+</body>
+</html>

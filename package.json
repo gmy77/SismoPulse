@@ -1,0 +1,9 @@
+{
+  "name": "sismopulse",
+  "version": "0.1.0-preview",
+  "private": true,
+  "description": "Dashboard statica sperimentale per attivita sismica osservata.",
+  "scripts": {
+    "serve": "python -m http.server 8080"
+  }
+}
