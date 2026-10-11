@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1-preview - 2026-10-11
+
+- Aggiunti metadati SEO e social preview per la pubblicazione GitHub Pages.
+- Aggiunti `robots.txt`, `sitemap.xml`, `site.webmanifest` e immagine `social-preview.svg`.
+- Migliorati titolo, descrizione, canonical URL, Open Graph, Twitter Card e JSON-LD.
+- Aggiornato README con link live, posizionamento pubblico e note promozionali.
+
 ## 0.1.0-preview - 2026-10-11
 
 - Prima preview pubblicabile di SismoPulse per GitHub Pages.

@@ -1,0 +1,9 @@
+{
+  "name": "SismoPulse",
+  "short_name": "SismoPulse",
+  "description": "Dashboard osservazionale per leggere attivita sismica recente, energia, profondita e sequenze.",
+  "start_url": "/SismoPulse/",
+  "display": "standalone",
+  "background_color": "#07100f",
+  "theme_color": "#39e28c"
+}

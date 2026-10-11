@@ -3,8 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="sismopulse-version" content="0.1.0-preview">
-  <title>SismoPulse Concept</title>
+  <meta name="sismopulse-version" content="0.1.1-preview">
+  <meta name="description" content="SismoPulse mostra dove l'attivita sismica osservata e sopra la media recente, con mappa globale, energia, profondita e sequenze. Non e una previsione.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#39e28c">
+  <link rel="canonical" href="https://gmy77.github.io/SismoPulse/">
+  <link rel="manifest" href="site.webmanifest">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SismoPulse">
+  <meta property="og:title" content="SismoPulse - Attivita sismica osservata">
+  <meta property="og:description" content="Mappa globale, energia, profondita e sequenze sismiche in una dashboard osservazionale. Non e una previsione.">
+  <meta property="og:url" content="https://gmy77.github.io/SismoPulse/">
+  <meta property="og:image" content="https://gmy77.github.io/SismoPulse/social-preview.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SismoPulse - Attivita sismica osservata">
+  <meta name="twitter:description" content="Dashboard osservazionale per leggere attivita sismica recente, energia, profondita e sequenze.">
+  <meta name="twitter:image" content="https://gmy77.github.io/SismoPulse/social-preview.svg">
+  <title>SismoPulse - Attivita sismica osservata</title>
   <style>
     :root {
       color-scheme: dark;
@@ -678,7 +693,7 @@
           <span class="status"><span class="dot"></span> Live data</span>
           <span class="stamp" id="updatedAt">sincronizzazione...</span>
         </div>
-        <span class="version-badge">SismoPulse v0.1.0-preview</span>
+        <span class="version-badge">SismoPulse v0.1.1-preview</span>
         <p class="method">Non e una previsione: e una lettura statistica e visiva dei terremoti gia rilevati.</p>
       </aside>
     </header>
@@ -1434,6 +1449,22 @@
         console.warn("Mappa reale non caricata:", error);
       });
     });
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SismoPulse",
+      "url": "https://gmy77.github.io/SismoPulse/",
+      "applicationCategory": "DataVisualizationApplication",
+      "operatingSystem": "Any",
+      "description": "Dashboard osservazionale per leggere attivita sismica recente, energia, profondita e sequenze. Non e una previsione sismica.",
+      "version": "0.1.1-preview",
+      "creator": {
+        "@type": "Person",
+        "name": "gmy77"
+      }
+    }
   </script>
 </body>
 </html>

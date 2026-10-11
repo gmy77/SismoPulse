@@ -1,32 +1,38 @@
 # SismoPulse
 
-Versione: `0.1.0-preview`
+Versione: `0.1.1-preview`
 
-Dashboard statica sperimentale per leggere l'attivita sismica osservata con mappa globale, heatmap, faglie/placche, grafici di energia, profondita, sequenze e indice di attenzione.
+SismoPulse mostra dove l'attivita sismica osservata e sopra la media recente, senza fare previsioni.
 
-Questa versione e pensata per GitHub Pages. Nome repository consigliato: `SismoPulse`.
+Dashboard statica sperimentale per leggere attivita sismica osservata con mappa globale, heatmap, faglie/placche, grafici di energia, profondita, sequenze e indice di attenzione.
 
-## Pubblicazione su GitHub Pages
-
-1. Crea un repository GitHub, per esempio `SismoPulse`.
-2. Carica il contenuto di questa cartella nella root del repository.
-3. In GitHub vai su `Settings > Pages`.
-4. Imposta `Deploy from a branch`.
-5. Seleziona branch `main` e cartella `/root`.
-6. Dopo il deploy la dashboard sara disponibile come:
+## Live
 
 ```text
 https://gmy77.github.io/SismoPulse/
 ```
 
+## Cosa fa
+
+- Mostra eventi sismici recenti su planisfero.
+- Evidenzia sequenze, eventi superficiali ed energia rilasciata.
+- Confronta l'attivita osservata con una baseline recente.
+- Offre una lettura sintetica con indice di attenzione.
+- Usa dati USGS live quando disponibili, con fallback demo per evitare schermate vuote.
+
 ## Note
 
 - Non richiede Cloudflare.
 - Non modifica SismoGlobe o SISMO FVG.
-- Usa dati USGS live quando disponibili, con fallback demo per non mostrare una pagina vuota.
 - La dashboard e osservazionale: non e una previsione sismica.
+
+## Promozione
+
+- URL consigliato per condivisione: `https://gmy77.github.io/SismoPulse/`
+- Frase breve: "SismoPulse mostra dove l'attivita sismica osservata e sopra la media recente, senza fare previsioni."
+- Topic consigliati GitHub: `earthquake`, `seismic`, `dashboard`, `geology`, `usgs`, `github-pages`, `visualization`.
 
 ## Versionamento
 
-- Versione corrente: `0.1.0-preview`
+- Versione corrente: `0.1.1-preview`
 - Aggiorna `VERSION`, `package.json` e `CHANGELOG.md` a ogni modifica pubblicabile.

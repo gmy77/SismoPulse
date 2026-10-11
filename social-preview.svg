@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#07100f"/>
+      <stop offset=".55" stop-color="#10201e"/>
+      <stop offset="1" stop-color="#090d0c"/>
+    </linearGradient>
+    <radialGradient id="pulse" cx=".72" cy=".48" r=".42">
+      <stop offset="0" stop-color="#fb7d4d" stop-opacity=".9"/>
+      <stop offset=".45" stop-color="#f6bf54" stop-opacity=".32"/>
+      <stop offset="1" stop-color="#07100f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <path d="M120 380 C260 260 340 320 460 260 C620 180 720 280 860 220 C980 170 1050 250 1120 210" fill="none" stroke="#54d2ca" stroke-width="3" stroke-dasharray="14 16" opacity=".6"/>
+  <path d="M110 455 C290 500 420 420 590 470 C780 520 930 430 1090 472" fill="none" stroke="#f6bf54" stroke-width="3" stroke-dasharray="12 18" opacity=".45"/>
+  <circle cx="780" cy="315" r="260" fill="url(#pulse)"/>
+  <g opacity=".24" fill="#ecf7ef">
+    <path d="M195 210h145l55 48-33 88-112 22-78-58z"/>
+    <path d="M425 205h210l86 68-54 102-184 18-86-78z"/>
+    <path d="M690 215h265l110 92-82 132-252 22-96-118z"/>
+    <path d="M330 405h135l55 82-84 60-114-35z"/>
+  </g>
+  <g font-family="Bahnschrift, Segoe UI, sans-serif" fill="#ecf7ef">
+    <text x="92" y="190" font-size="88" font-weight="800">SismoPulse</text>
+    <text x="98" y="258" font-size="31" fill="#a8c8bd">Attivita sismica osservata, energia, profondita e sequenze</text>
+    <text x="100" y="528" font-size="24" fill="#54d2ca" font-weight="700">Non e una previsione. E una dashboard per capire cosa si sta osservando.</text>
+  </g>
+  <g transform="translate(94 306)">
+    <rect width="248" height="74" fill="#12302a" stroke="#39e28c" stroke-opacity=".6"/>
+    <circle cx="34" cy="37" r="9" fill="#39e28c"/>
+    <text x="58" y="45" fill="#39e28c" font-family="Bahnschrift, Segoe UI, sans-serif" font-size="24" font-weight="800">LIVE DATA</text>
+  </g>
+</svg>

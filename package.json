@@ -1,8 +1,8 @@
 {
   "name": "sismopulse",
-  "version": "0.1.0-preview",
+  "version": "0.1.1-preview",
   "private": true,
-  "description": "Dashboard statica sperimentale per attivita sismica osservata.",
+  "description": "Dashboard statica sperimentale per leggere attivita sismica osservata, energia, profondita e sequenze.",
   "scripts": {
     "serve": "python -m http.server 8080"
   }
