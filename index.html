@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="sismopulse-version" content="0.1.2-preview">
+  <meta name="sismopulse-version" content="0.1.5-preview">
   <meta name="description" content="SismoPulse mostra dove l'attivita sismica osservata e sopra la media recente, con mappa globale, energia, profondita e sequenze. Non e una previsione.">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#39e28c">
@@ -553,6 +553,13 @@
       font-size: 0.88rem;
     }
 
+    .source-note small {
+      display: block;
+      margin-top: 6px;
+      color: var(--quiet);
+      font-size: 0.76rem;
+    }
+
     .insight-panel {
       padding: 18px;
       display: grid;
@@ -716,7 +723,7 @@
           <span class="status"><span class="dot"></span> Live data</span>
           <span class="stamp" id="updatedAt">sincronizzazione...</span>
         </div>
-        <span class="version-badge">SismoPulse v0.1.2-preview</span>
+        <span class="version-badge">SismoPulse v0.1.5-preview</span>
         <p class="method">Non e una previsione: e una lettura statistica e visiva dei terremoti gia rilevati.</p>
       </aside>
     </header>
@@ -726,11 +733,11 @@
         <div class="map-head">
           <div>
             <p class="eyebrow">Pulse field globale</p>
-            <h2>Zone in accelerazione nelle ultime 24 ore</h2>
+            <h2 id="mapPeriodTitle">Attivita sismica nelle ultime 24 ore</h2>
           </div>
           <div class="toggle" aria-label="Vista mappa">
-            <button class="active" type="button">24h</button>
-            <button type="button">7g</button>
+            <button class="active" type="button" data-map-days="1" aria-pressed="true">24h</button>
+            <button type="button" data-map-days="7" aria-pressed="false">7g</button>
           </div>
         </div>
         <canvas id="pulseMap" aria-label="Mappa di calore sismica"></canvas>
@@ -789,16 +796,19 @@
 
     <section class="source-strip" aria-label="Fonti dati e copertura">
       <div class="source-note">
-        <strong>Fonte live attiva</strong>
-        USGS FDSN Event API, formato GeoJSON. Query preview: ultimi 30 giorni, magnitudo minima M2.5, massimo 1200 eventi.
+        <strong>Fonti live</strong>
+        <span id="sourceActiveNote">USGS in caricamento, EMSC/INGV in verifica...</span>
+        <small id="sourceCountNote">Cataloghi: sincronizzazione in corso.</small>
       </div>
       <div class="source-note">
         <strong>Cosa vedi sulla mappa</strong>
-        La mappa principale evidenzia ultimi 24h e scosse forti recenti. Non e l'intero catalogo mondiale.
+        <span id="mapPeriodNote">Eventi nelle ultime 24 ore.</span>
+        <small id="sourceCoverageNote">Copertura: globale USGS, euro-mediterranea EMSC, Italia INGV quando disponibile.</small>
       </div>
       <div class="source-note">
-        <strong>Prossime fonti</strong>
-        EMSC/SeismicPortal e INGV FDSN sono candidate per una versione multi-fonte con deduplicazione.
+        <strong>Trasparenza</strong>
+        <span id="sourceQualityNote">Gli eventi simili tra fonti vengono uniti con deduplicazione approssimata.</span>
+        <small>Campi Flegrei e Friuli V.G. vanno letti con cataloghi INGV/locali, non solo USGS M2.5+.</small>
       </div>
     </section>
 
@@ -898,8 +908,8 @@
   <script>
     const DAY = 24 * 60 * 60 * 1000;
     const regions = [
-      { name: "Campi Flegrei", lat: 40.83, lon: 14.14, radius: 0.55, base: 7.4 },
-      { name: "Friuli V.G.", lat: 46.15, lon: 13.1, radius: 1.3, base: 2.2 },
+      { name: "Campi Flegrei", lat: 40.83, lon: 14.14, radius: 0.55, base: 7.4, localCatalog: "INGV / OV-INGV richiesto" },
+      { name: "Friuli V.G.", lat: 46.15, lon: 13.1, radius: 1.3, base: 2.2, localCatalog: "INGV / rete regionale richiesta" },
       { name: "Italia", lat: 42.9, lon: 12.6, radius: 6.2, base: 18 },
       { name: "Mediterraneo", lat: 38, lon: 18, radius: 16, base: 46 },
       { name: "Mondo M4+", lat: 0, lon: 0, radius: 180, base: 112 }
@@ -914,6 +924,7 @@
       [36.2, 70.5, 4.7, 109], [64.8, -18.2, 4.2, 4], [-36.7, -73.1, 4.1, 22]
     ].map((e, i) => ({
       id: "demo-" + i,
+      source: "DEMO",
       lat: e[0],
       lon: e[1],
       mag: e[2],
@@ -925,6 +936,7 @@
     function buildDemoEvents() {
       return fallbackEvents.concat(Array.from({ length: 180 }, (_, i) => ({
         id: "synthetic-" + i,
+        source: "DEMO",
         lat: -58 + seededNoise(i) * 126,
         lon: -178 + seededNoise(i + 300) * 356,
         mag: 2.5 + seededNoise(i + 600) * 3.6,
@@ -940,6 +952,16 @@
     let currentProjection = null;
     let politicalMapReady = false;
     let activeLens = "all";
+    let mapDays = 1;
+
+    function eventsForMap(events, days, now = Date.now()) {
+      return events.filter(event => event.time >= now - days * DAY && event.time <= now);
+    }
+    let sourceStatus = {
+      USGS: { state: "demo", count: 0, label: "globale M2.5+" },
+      EMSC: { state: "idle", count: 0, label: "euro-mediterraneo" },
+      INGV: { state: "idle", count: 0, label: "Italia e aree locali" }
+    };
 
     function seededNoise(index) {
       const x = Math.sin(index * 42.771) * 10000;
@@ -965,6 +987,141 @@
       if (tons > 1_000_000) return (tons / 1_000_000).toFixed(1) + " Mt";
       if (tons > 1_000) return (tons / 1_000).toFixed(1) + " kt";
       return Math.round(tons) + " t";
+    }
+
+    function renderSourceStatus() {
+      const ok = Object.entries(sourceStatus)
+        .filter(([, info]) => info.state === "ok")
+        .map(([name, info]) => `${name} ${info.count}`);
+      const blocked = Object.entries(sourceStatus)
+        .filter(([, info]) => info.state === "blocked" || info.state === "error")
+        .map(([name]) => name);
+      const loading = Object.entries(sourceStatus)
+        .filter(([, info]) => info.state === "loading")
+        .map(([name]) => name);
+
+      const activeNote = document.getElementById("sourceActiveNote");
+      const countNote = document.getElementById("sourceCountNote");
+      const coverageNote = document.getElementById("sourceCoverageNote");
+      const qualityNote = document.getElementById("sourceQualityNote");
+
+      if (activeNote) {
+        activeNote.textContent = ok.length
+          ? `Attive ora: ${ok.join(" | ")}.`
+          : loading.length
+            ? `In caricamento: ${loading.join(", ")}.`
+            : "Nessuna fonte live disponibile ora: uso demo locale.";
+      }
+      if (countNote) {
+        countNote.textContent = blocked.length
+          ? `Da verificare: ${blocked.join(", ")}. La pagina non inventa dati se una fonte non risponde.`
+          : "Tutte le fonti richieste che hanno risposto sono incluse.";
+      }
+      if (coverageNote) {
+        coverageNote.textContent = sourceStatus.INGV.state === "ok"
+          ? "Copertura: USGS globale, EMSC euro-mediterraneo, INGV Italia e micro-sismicita locale."
+          : "Copertura: INGV non disponibile ora dal browser, quindi Campi/FVG restano letture incomplete.";
+      }
+      if (qualityNote) {
+        qualityNote.textContent = "Gli eventi simili tra fonti vengono uniti con deduplicazione approssimata, preferendo INGV per Italia e EMSC per Mediterraneo.";
+      }
+    }
+
+    function normalizeGeoJsonFeature(feature, source) {
+      const coords = feature && feature.geometry && feature.geometry.coordinates;
+      const props = feature && feature.properties ? feature.properties : {};
+      if (!coords || coords.length < 2) return null;
+      return {
+        id: `${source}-${feature.id || props.eventid || props.event_id || props.unid || props.source_id || props.time || coords.join("-")}`,
+        source,
+        lon: Number(coords[0]),
+        lat: Number(coords[1]),
+        depth: Number(coords[2] || props.depth || 0),
+        mag: Number(props.mag || props.magnitude || props.ml || props.mw || 0),
+        place: props.place || props.flynn_region || props.eventLocationName || props.description || props.region || "evento",
+        time: Number(props.time) || Date.parse(props.time || props.time_value || props.origin_time || props.datetime)
+      };
+    }
+
+    function parseFdsnText(text, source) {
+      const rows = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      if (!rows.length) return [];
+      const headerIndex = rows.findIndex(line => line.includes("|") && /time|latitude|longitude|mag/i.test(line));
+      const headers = headerIndex >= 0
+        ? rows[headerIndex].replace(/^#/, "").split("|").map(item => item.trim().toLowerCase())
+        : ["eventid", "time", "latitude", "longitude", "depth", "author", "catalog", "contributor", "contributorid", "magtype", "magnitude", "magauthor", "eventlocationname"];
+      const startIndex = headerIndex >= 0 ? headerIndex + 1 : 0;
+
+      function value(parts, names) {
+        for (const name of names) {
+          const index = headers.indexOf(name);
+          if (index >= 0 && parts[index] !== undefined) return parts[index].trim();
+        }
+        return "";
+      }
+
+      return rows.slice(startIndex).map((line, index) => {
+        const parts = line.split("|");
+        if (parts.length < 5) return null;
+        const time = Date.parse(value(parts, ["time", "origin_time", "datetime", "date"]));
+        const lat = Number(value(parts, ["latitude", "lat"]));
+        const lon = Number(value(parts, ["longitude", "lon"]));
+        const mag = Number(value(parts, ["magnitude", "mag", "magvalue"]));
+        return {
+          id: `${source}-${value(parts, ["eventid", "event_id", "source_id", "unid"]) || index}`,
+          source,
+          lat,
+          lon,
+          depth: Number(value(parts, ["depth", "depthkm", "depth_km"]) || 0),
+          mag,
+          place: value(parts, ["eventlocationname", "place", "region", "flynn_region"]) || "evento",
+          time
+        };
+      }).filter(isUsableEvent);
+    }
+
+    function isUsableEvent(event) {
+      return event
+        && Number.isFinite(event.lat)
+        && Number.isFinite(event.lon)
+        && Number.isFinite(event.mag)
+        && Number.isFinite(event.time)
+        && event.mag > 0;
+    }
+
+    async function fetchJsonCatalog(source, url) {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`${source} ${res.status}`);
+      const data = await res.json();
+      const features = Array.isArray(data.features) ? data.features : [];
+      const events = features.map(feature => normalizeGeoJsonFeature(feature, source)).filter(isUsableEvent);
+      if (!events.length) throw new Error(`${source} formato JSON non riconosciuto`);
+      return events;
+    }
+
+    async function fetchTextCatalog(source, url) {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`${source} ${res.status}`);
+      return parseFdsnText(await res.text(), source);
+    }
+
+    function dedupeEvents(events) {
+      const priority = { INGV: 3, EMSC: 2, USGS: 1, DEMO: 0 };
+      const merged = new Map();
+      events.forEach(event => {
+        const bucketTime = Math.round(event.time / 120000);
+        const key = [
+          bucketTime,
+          Math.round(event.lat * 10) / 10,
+          Math.round(event.lon * 10) / 10,
+          Math.round(event.mag * 10) / 10
+        ].join("|");
+        const previous = merged.get(key);
+        if (!previous || (priority[event.source] || 0) > (priority[previous.source] || 0)) {
+          merged.set(key, event);
+        }
+      });
+      return [...merged.values()].sort((a, b) => b.time - a.time);
     }
 
     function project(lon, lat, width, height) {
@@ -1375,16 +1532,22 @@
         const count = region.radius === 180
           ? events.filter(e => e.mag >= 4).length
           : events.filter(e => haversineKm(region.lat, region.lon, e.lat, e.lon) < region.radius * 111).length;
+        const needsLocal = Boolean(region.localCatalog);
+        const hasIngv = sourceStatus.INGV.state === "ok";
+        const localIncomplete = needsLocal && !hasIngv;
         const delta = Math.round(((count - region.base) / Math.max(1, region.base)) * 100);
-        const hot = delta > 65;
-        const warm = delta > 20;
-        const badge = hot ? "sequenza" : warm ? "sopra media" : "normale";
-        const color = hot ? "#fb7d4d" : warm ? "#f6bf54" : "#39e28c";
+        const hot = !localIncomplete && delta > 65;
+        const warm = !localIncomplete && delta > 20;
+        const badge = localIncomplete ? "locale" : hot ? "sequenza" : warm ? "sopra media" : "normale";
+        const color = localIncomplete ? "#54d2ca" : hot ? "#fb7d4d" : warm ? "#f6bf54" : "#39e28c";
+        const detail = localIncomplete
+          ? `dato locale incompleto | ${region.localCatalog}`
+          : `${count} eventi · ${delta >= 0 ? "+" : ""}${delta}% vs baseline`;
         return `
           <div class="region">
             <div>
               <strong>${region.name}</strong>
-              <small>${count} eventi · ${delta >= 0 ? "+" : ""}${delta}% vs baseline</small>
+              <small>${detail}</small>
             </div>
             <span class="badge" style="--badge:${color};--badge-bg:${color}22">${badge}</span>
           </div>
@@ -1414,25 +1577,56 @@
     }
 
     async function loadEvents() {
-      const start = new Date(Date.now() - 30 * DAY).toISOString();
-      const url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=" + encodeURIComponent(start) + "&minmagnitude=2.5&orderby=time&limit=1200";
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error("USGS " + res.status);
-        const data = await res.json();
-        return data.features.map(feature => ({
-          id: feature.id,
-          lon: feature.geometry.coordinates[0],
-          lat: feature.geometry.coordinates[1],
-          depth: feature.geometry.coordinates[2],
-          mag: Number(feature.properties.mag || 0),
-          place: feature.properties.place || "evento",
-          time: feature.properties.time
-        })).filter(e => Number.isFinite(e.lat) && Number.isFinite(e.lon) && e.mag > 0);
-      } catch (error) {
-        console.warn("Uso dati demo:", error);
-        return buildDemoEvents();
-      }
+      const start30 = new Date(Date.now() - 30 * DAY).toISOString();
+      const start7 = new Date(Date.now() - 7 * DAY).toISOString();
+      sourceStatus = {
+        USGS: { state: "loading", count: 0, label: "globale M2.5+" },
+        EMSC: { state: "loading", count: 0, label: "euro-mediterraneo" },
+        INGV: { state: "loading", count: 0, label: "Italia e aree locali" }
+      };
+      renderSourceStatus();
+
+      const catalogs = [
+        {
+          source: "USGS",
+          load: () => fetchJsonCatalog("USGS", "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=" + encodeURIComponent(start30) + "&minmagnitude=2.5&orderby=time&limit=1200")
+        },
+        {
+          source: "EMSC",
+          load: () => fetchJsonCatalog("EMSC", "https://www.seismicportal.eu/fdsnws/event/1/query?format=json&starttime=" + encodeURIComponent(start30) + "&minmagnitude=2.5&orderby=time&limit=1200")
+            .catch(() => fetchTextCatalog("EMSC", "https://www.seismicportal.eu/fdsnws/event/1/query?format=text&starttime=" + encodeURIComponent(start30) + "&minmagnitude=2.5&orderby=time&limit=1200"))
+        },
+        {
+          source: "INGV",
+          load: () => fetchJsonCatalog("INGV", "https://webservices.ingv.it/fdsnws/event/1/query?format=geojson&starttime=" + encodeURIComponent(start7) + "&minlatitude=35&maxlatitude=48&minlongitude=6&maxlongitude=20&minmagnitude=0&limit=1200")
+            .catch(() => fetchTextCatalog("INGV", "https://webservices.ingv.it/fdsnws/event/1/query?format=text&starttime=" + encodeURIComponent(start7) + "&minlatitude=35&maxlatitude=48&minlongitude=6&maxlongitude=20&minmagnitude=0&limit=1200"))
+        }
+      ];
+
+      const settled = await Promise.allSettled(catalogs.map(catalog => catalog.load()));
+      const loaded = [];
+      settled.forEach((result, index) => {
+        const source = catalogs[index].source;
+        if (result.status === "fulfilled" && result.value.length) {
+          sourceStatus[source].state = "ok";
+          sourceStatus[source].count = result.value.length;
+          loaded.push(...result.value);
+        } else {
+          sourceStatus[source].state = result.status === "rejected" ? "blocked" : "error";
+          sourceStatus[source].count = 0;
+          console.warn(`${source} non disponibile:`, result.reason || "nessun evento");
+        }
+      });
+      renderSourceStatus();
+
+      const merged = dedupeEvents(loaded);
+      if (merged.length) return merged;
+
+      sourceStatus.USGS = { state: "demo", count: fallbackEvents.length, label: "demo locale" };
+      sourceStatus.EMSC.state = "blocked";
+      sourceStatus.INGV.state = "blocked";
+      renderSourceStatus();
+      return buildDemoEvents();
     }
 
     async function loadWorldMap() {
@@ -1475,7 +1669,10 @@
     }
 
     function render() {
-      const hotEvents = allEvents.filter(e => e.time >= Date.now() - DAY || e.mag >= 4.8).slice(0, 320);
+      const hotEvents = eventsForMap(allEvents, mapDays);
+      const periodLabel = mapDays === 1 ? "nelle ultime 24 ore" : "negli ultimi 7 giorni";
+      document.getElementById("mapPeriodTitle").textContent = "Attivita sismica " + periodLabel;
+      document.getElementById("mapPeriodNote").textContent = hotEvents.length + " eventi " + periodLabel + " nel catalogo disponibile. Riepilogo rapido: ultime 24 ore.";
       const series = buildDailySeries(allEvents);
       drawMap(hotEvents);
       summarize(allEvents);
@@ -1515,6 +1712,18 @@
       }
     }
 
+    document.querySelectorAll("[data-map-days]").forEach(button => {
+      button.addEventListener("click", () => {
+        mapDays = Number(button.dataset.mapDays);
+        document.querySelectorAll("[data-map-days]").forEach(item => {
+          const selected = Number(item.dataset.mapDays) === mapDays;
+          item.classList.toggle("active", selected);
+          item.setAttribute("aria-pressed", String(selected));
+        });
+        render();
+      });
+    });
+
     document.querySelectorAll(".lens").forEach(button => {
       button.addEventListener("click", () => {
         activeLens = button.dataset.lens || "all";
@@ -1540,7 +1749,7 @@
       "applicationCategory": "DataVisualizationApplication",
       "operatingSystem": "Any",
       "description": "Dashboard osservazionale per leggere attivita sismica recente, energia, profondita e sequenze. Non e una previsione sismica.",
-      "version": "0.1.2-preview",
+      "version": "0.1.5-preview",
       "creator": {
         "@type": "Person",
         "name": "gmy77"
